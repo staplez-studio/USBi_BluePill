@@ -6,7 +6,7 @@ I made this because the USBi is extremely expensive for what it is and sometimes
 PRE-RELEASE Note - absolutely nothing has been tested. Staplez Studio takes no liability whatsoever for the use or misuse of the contents within. and I take no liability or responsibility for the outcome. As soon as I test everything and do my full audit I will update this to a full in depth guide.
 
 I WILL LOOK OVER ANY BUG REPORTS
-AND/OR ADD FEATURES ON ANY REASONABLE REQUEST IF IT PERTAINS TO THE PROJECT AND ADDS ANY BENEFIT TO THE USER OR PROJECT OR THE USABILITY OF THE DEVICE.
+AND/OR ADD FEATURES ON ANY REASONABLE REQUEST IF IT PERTAINS TO THE PROJECT AND ADDS ANY BENEFIT TO THE USER OR PROJECT OR THE USABILITY OF THE DEVICE. StaplezStudio@gmail.com
 
 Makes a Blue Pill appear to Windows and SigmaStudio as an **USBi** (USB `0456:7031`) and translates
 its vendor requests into **I2C** or **SPI** transfers for SigmaDSP targets.

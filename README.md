@@ -1,6 +1,7 @@
 <p align="center">
-  <img src="https://github.com/staplez-studio/BluePill_Extra_Applications/blob/main/github-banner-1024x512.png?raw=true" alt="Staplez Studio Banner" width="80%" />
+<img src="https://github.com/staplez-studio/BluePill_Extra_Applications/blob/main/github-banner-1024x512.png?raw=true" alt="Staplez Studio Banner" width="85%" />
 </p>
+
 # USBi emulator for the STM32 Blue Pill (STM32F103C8) by Staplez Studio
 
 > **Author:** [Staplez Studio](https://github.com/staplez-studio)  

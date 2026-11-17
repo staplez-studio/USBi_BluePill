@@ -1,6 +1,6 @@
 # USBi emulator for the STM32 Blue Pill (STM32F103C8) by Staplez Studio
 
-Makes a Blue Pill appear to Windows and SigmaStudio as an Analog Devices **USBi** (USB `0456:7031`) and translates
+Makes a Blue Pill appear to Windows and SigmaStudio as an **USBi** (USB `0456:7031`) and translates
 its vendor requests into **I2C** or **SPI** transfers for SigmaDSP targets.
 
 **Start here:** `docs/USBi_BluePill_Guide.html` (or `.md`): complete steps from opening this zip to a working setup.

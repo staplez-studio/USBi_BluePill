@@ -3,7 +3,7 @@
 </p>
 
 # USBi emulator for the STM32 Blue Pill (STM32F103C8) by Staplez Studio
-
+The firmware uses Analog Devices’ vendor ID, so keep it for personal use and don’t sell or distribute devices that use it.
 > **Author:** [Staplez Studio](https://github.com/staplez-studio)  
 > **Repository:** [https://github.com/staplez-studio/USBi_BluePill](https://github.com/staplez-studio/USBi_BluePill)  
 > **License:** Non-Commercial Attribution (See [LICENSE](LICENSE))

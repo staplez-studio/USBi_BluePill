@@ -25,3 +25,7 @@ I cannot guarantee this will compile without errors.
 4. Run SigmaStudio, watch the log on PA9 (115200 8N1), and send the log if anything fails.
 
 Status: compiled, hex validated, protocol layer unit-tested on a PC. Not yet tested against real SigmaStudio hardware.
+
+if you used anything from this repo.
+and want to show your appreciation feel free to leave a small donation
+PayPal.me/StaplezStudio

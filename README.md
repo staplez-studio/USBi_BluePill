@@ -9,7 +9,7 @@ The firmware uses Analog Devices’ vendor ID, so keep it for personal use and d
 > **License:** Non-Commercial Attribution (See [LICENSE](LICENSE))
 
 ---
-
+⚠️ USBi / Vendor ID Notice: This project uses an Analog Devices USB Vendor ID for SigmaStudio compatibility. Provided strictly for personal, non-commercial use. Commercial distribution is prohibited unless the Analog Devices VID is completely removed and omitted from any user-facing distribution.
 ## Overview
 
 Note from the Staplez Studio

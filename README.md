@@ -1,5 +1,13 @@
 # USBi emulator for the STM32 Blue Pill (STM32F103C8) by Staplez Studio
 
+> **Author:** [Staplez Studio](https://github.com/staplez-studio)  
+> **Repository:** [https://github.com/staplez-studio/USBi_BluePill](https://github.com/staplez-studio/USBi_BluePill)  
+> **License:** Non-Commercial Attribution (See [LICENSE](LICENSE))
+
+---
+
+## Overview
+
 Note from the Staplez Studio
 I made this because the USBi is extremely expensive for what it is and sometimes can be hard to source and I truly just wanted to save people time and money and if it was reasonably priced and I could get one quickly this would have never happened. 
 

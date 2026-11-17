@@ -8,13 +8,13 @@
 > **Repository:** [https://github.com/staplez-studio/USBi_BluePill](https://github.com/staplez-studio/USBi_BluePill)  
 > **License:** Non-Commercial Attribution (See [LICENSE](LICENSE))
 
-> ⚠️ **USBi / USB Vendor ID Notice:** While this firmware is original code, it utilizes an Analog Devices USB Vendor ID (`0x0456`) for SigmaStudio compatibility. Provided strictly for **personal, non-commercial use**. Commercial sale or distribution is prohibited unless the Analog Devices VID is completely removed and omitted from any user-facing distribution.
+> ⚠️ **USBi / USB Vendor ID Notice:** While this firmware is original code, it utilizes an Analog Devices USB Vendor ID for SigmaStudio compatibility. Provided strictly for **personal, non-commercial use**. Commercial sale or distribution is prohibited unless the Analog Devices VID is completely removed and omitted from any user-facing distribution.
 
 ---
 
 ## Overview
 
-Makes an STM32 Blue Pill appear to Windows and SigmaStudio as an Analog Devices **USBi** (`0456:7031`) and translates its vendor requests into **I2C** or **SPI** transfers for SigmaDSP targets.
+Makes an STM32 Blue Pill appear to Windows and SigmaStudio as an Analog Devices **USBi** and translates its vendor requests into **I2C** or **SPI** transfers for SigmaDSP targets.
 
 ### Note from Staplez Studio
 I made this because the official USBi is extremely expensive for what it is and can be hard to source. I truly just wanted to save people time and money—if it were reasonably priced and easy to get quickly, this project would have never happened.

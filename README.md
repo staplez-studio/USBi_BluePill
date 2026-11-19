@@ -14,7 +14,7 @@
 
 ## Overview
 
-Makes an STM32 Blue Pill Dx-Smart PJ26-v1.2 Edition appear to Windows and SigmaStudio as an Analog Devices **USBi** and translates its vendor requests into **I2C** or **SPI** transfers for SigmaDSP targets.
+Makes an STM32 Blue Pill Dx-Smart PJ26-v1.2 Edition (see "docs/PJ26.pdf" and "docs/")appear to Windows and SigmaStudio as an Analog Devices **USBi** and translates its vendor requests into **I2C** or **SPI** transfers for SigmaDSP targets.
 
 ### Note from Staplez Studio
 I made this version because I actually don't own a original off the shelf STM32F103C8 witch what the code was originally written for. I did how ever have a BluePill The Dx-Smart-PJ26-v1.2 not expensive for what it is. I truly just wanted to help out the community,this edition of my firm ware has an option for a screen.

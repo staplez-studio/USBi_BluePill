@@ -2,10 +2,10 @@
   <img src="https://github.com/staplez-studio/BluePill_Extra_Applications/blob/main/github-banner-1024x512.png?raw=true" alt="Staplez Studio Banner" width="85%" />
 </p>
 
-# USBi Emulator for the STM32 Blue Pill (STM32F103C8)
+# USBi Emulator for the STM32 Blue Pill Dx-Smart PJ26-v1.2 Edition (Based off Original-STM32F103C8)
 
 > **Author:** [Staplez Studio](https://github.com/staplez-studio)  
-> **Repository:** [https://github.com/staplez-studio/USBi_BluePill](https://github.com/staplez-studio/USBi_BluePill)  
+> **Main Repository:** [https://github.com/staplez-studio/USBi_BluePill](https://github.com/staplez-studio/USBi_BluePill)  
 > **License:** Non-Commercial Attribution (See [LICENSE](LICENSE))
 
 > ⚠️ **USBi / USB Vendor ID Notice:** While this firmware is original code, it utilizes an Analog Devices USB Vendor ID for SigmaStudio compatibility. Provided strictly for **personal, non-commercial use**. Commercial sale or distribution is prohibited unless the Analog Devices VID is completely removed and omitted from any user-facing distribution.
@@ -14,17 +14,18 @@
 
 ## Overview
 
-Makes an STM32 Blue Pill appear to Windows and SigmaStudio as an Analog Devices **USBi** and translates its vendor requests into **I2C** or **SPI** transfers for SigmaDSP targets.
+Makes an STM32 Blue Pill Dx-Smart PJ26-v1.2 Edition appear to Windows and SigmaStudio as an Analog Devices **USBi** and translates its vendor requests into **I2C** or **SPI** transfers for SigmaDSP targets.
 
 ### Note from Staplez Studio
-I made this because the official USBi is extremely expensive for what it is and can be hard to source. I truly just wanted to save people time and money—if it were reasonably priced and easy to get quickly, this project would have never happened.
+I made this version because I actually don't own a original off the shelf STM32F103C8 witch what the code was originally written for. I did how ever have a BluePill The Dx-Smart-PJ26-v1.2 not expensive for what it is. I truly just wanted to help out the community,this edition of my firm ware has an option for a screen.
 
 * **Bug Reports & Feature Requests:** I will look over any bug reports and add features on any reasonable request if it pertains to the project and adds benefit to the user or usability of the device. Reach out at **StaplezStudio@gmail.com**.
 
+########### GENERIC INSTRUCTIONS  ##################### subject to change<<<<<<<<<<<<<<<
 ---
 
 ## ⚠️ Pre-Release Disclaimer
-
+**HEADS UP** I HAVE NOT UPDATED THIS CODE YET 11/19/26 ILL BE BACK SOON TO UPDATE UNTIL THEN IT REMAINS JUST A CLONE OF THE MAIN
 **Status:** Compiled, hex validated, and protocol layer unit-tested on a PC. **Not yet tested against real SigmaStudio hardware.**
 
 * **No Liability:** Absolutely nothing has been hardware-tested yet. Staplez Studio takes no liability or responsibility whatsoever for the use, misuse, or outcome of the contents within. Once everything is tested and audited, this README will be updated with a full, in-depth guide.

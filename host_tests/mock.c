@@ -23,5 +23,5 @@ int resets, aux1=-1, aux2=-1;
 void usbi_target_reset(void){ resets++; }
 void usbi_aux1(int l){ aux1=l; } void usbi_aux2(int l){ aux2=l; } void usbi_led_mode(int s){ (void)s; }
 void usbi_hw_init(void){}
-void usbi_log_putc(char c){ putchar(c); }
+void usbi_log_putc(char c){ (void)c; }
 void wire_dump(const char*t){ printf("  [%s] %s", t, wire); if(wire[wl?wl-1:0]!='\n') printf("\n"); wl=0; wire[0]=0; }

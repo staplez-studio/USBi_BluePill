@@ -1,6 +1,8 @@
 /* main.c - USBi (0456:7031) emulator for the STM32F103C8 "Blue Pill" */
 #include "stm32f1xx_hal.h"
 #include "usbd_usbi.h"
+#include "ui.h"
+#include "board.h"
 
 static void Error_Handler(void) { __disable_irq(); while (1) { } }
 
@@ -35,15 +37,17 @@ int main(void)
   HAL_Init();
   SystemClock_Config();
 
-  __HAL_RCC_GPIOC_CLK_ENABLE();                       /* PC13 = on-board LED (heartbeat) */
+  __HAL_RCC_GPIOB_CLK_ENABLE(); __HAL_RCC_GPIOC_CLK_ENABLE();   /* heartbeat LED: PB11 (DX-PJ26) or PC13 (Blue Pill) */
   GPIO_InitTypeDef g = {0};
-  g.Pin = GPIO_PIN_13; g.Mode = GPIO_MODE_OUTPUT_PP; g.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &g);
+  g.Pin = HB_PIN; g.Mode = GPIO_MODE_OUTPUT_PP; g.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(HB_PORT, &g);
 
   USBI_Start();                                       /* bus pins, re-enumeration, USB stack */
+  ui_init();                                          /* OLED status screen (skipped if no display answers) */
 
   uint32_t t = HAL_GetTick();
   for (;;) {
-    if (HAL_GetTick() - t >= 500) { t += 500; HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13); }
+    if (HAL_GetTick() - t >= 500) { t += 500; HAL_GPIO_TogglePin(HB_PORT, HB_PIN); }
+    ui_poll();
   }
 }

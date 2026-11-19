@@ -1,7 +1,7 @@
 <p align="center">
   <img src="https://github.com/staplez-studio/BluePill_Extra_Applications/blob/main/github-banner-1024x512.png?raw=true" alt="Staplez Studio Banner" width="85%" />
 </p>
-# USBi emulator for the Blue Pill (STM32F103C8)
+# USBi emulator for the Blue Pill (STM32F103C8) Dx-Smart-PJ26-v1.2-Edition 
 
 Makes a Blue Pill appear to Windows and SigmaStudio as an Analog Devices **USBi** (USB `0456:7031`) and translates
 its vendor requests into **I2C** or **SPI** transfers for SigmaDSP targets.

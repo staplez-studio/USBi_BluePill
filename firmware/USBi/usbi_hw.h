@@ -2,7 +2,10 @@
 #pragma once
 #include <stdint.h>
 #ifndef USBI_LOG
-#define USBI_LOG 1   /* 1 = log every vendor request on USART1 TX (PA9, 115200 8N1). Set 0 for normal use. */
+#define USBI_LOG 1   /* 1 = log every vendor request (115200 8N1). Set 0 for normal use. */
+#endif
+#ifndef USBI_LOG_UART
+#define USBI_LOG_UART 2   /* 2 = USART2 TX on PA2 (external adapter); 1 = USART1 TX on PA9 (DX-PJ26: the on-board USB-C serial port) */
 #endif
 void usbi_log_putc(char c);
 void usbi_hw_init(void);

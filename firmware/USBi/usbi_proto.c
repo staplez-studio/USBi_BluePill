@@ -11,9 +11,24 @@
  * SigmaDSP register read = B3 (2-byte sub-address) then B4 (N bytes), then B6 for status. */
 #include "usbi_proto.h"
 #include "usbi_hw.h"
+#include "usbi_stats.h"
 #include <string.h>
 
 static uint8_t st_wr, st_rd;
+
+static void note_req(const usbi_setup_t *s)
+{
+  usbi_stats.req_cnt++; usbi_stats.have_req = 1; usbi_stats.last_rq = s->bRequest;
+  usbi_stats.last_v = s->wValue; usbi_stats.last_i = s->wIndex; usbi_stats.last_l = s->wLength;
+}
+static void note_xfer(int rd, int spi, const usbi_setup_t *s, uint16_t len, uint8_t st)
+{
+  if (rd) { usbi_stats.rd_cnt++; usbi_stats.last_rd_len = len; usbi_stats.last_rd_st = st; }
+  else    { usbi_stats.wr_cnt++; usbi_stats.last_wr_len = len; usbi_stats.last_wr_st = st; }
+  usbi_stats.last_bus = (uint8_t)spi; usbi_stats.last_addr = (uint8_t)s->wValue; usbi_stats.last_cs = (uint8_t)(s->wIndex >> 8);
+  if (st == USBI_ST_NACK) usbi_stats.nack_cnt++; else if (st == USBI_ST_BERR) usbi_stats.berr_cnt++;
+}
+static void note_unk(const usbi_setup_t *s) { usbi_stats.unk_cnt++; usbi_stats.have_unk = 1; usbi_stats.unk_rq = s->bRequest; }
 
 #if USBI_LOG
 static void lputs(const char *s) { while (*s) usbi_log_putc(*s++); }
@@ -83,18 +98,19 @@ int usbi_vendor_out(const usbi_setup_t *s, const uint8_t *d, uint16_t len)
 {
   int spi = (s->wIndex & 0xFF) != 0;
   logreq('O', s, d, len, s->bRequest < USBI_REQ_NOP || s->bRequest > USBI_REQ_AUX2);
+  note_req(s);
   switch (s->bRequest) {
   case USBI_REQ_NOP:   return 0;
   case USBI_REQ_WRITE:
     st_wr = spi ? spi_write(s, d, len, 0) : i2c_write(s, d, len, 0);
-    usbi_led_mode(spi); return 0;
+    note_xfer(0, spi, s, len, st_wr); usbi_led_mode(spi); return 0;
   case USBI_REQ_ADDR:
     st_wr = spi ? spi_write(s, d, len, 1) : i2c_write(s, d, len, 1);
-    usbi_led_mode(spi); return 0;
+    note_xfer(0, spi, s, len, st_wr); usbi_led_mode(spi); return 0;
   case USBI_REQ_RESET: usbi_target_reset(); return 0;
   case USBI_REQ_AUX1:  usbi_aux1((s->wValue & 0xFF) != 0); return 0;
   case USBI_REQ_AUX2:  usbi_aux2((s->wValue & 0xFF) != 1); return 0;
-  default:             return -1;
+  default:             note_unk(s); return -1;
   }
 }
 
@@ -103,13 +119,14 @@ int usbi_vendor_in(const usbi_setup_t *s, uint8_t *buf, uint16_t max)
   int spi = (s->wIndex & 0xFF) != 0;
   uint16_t n = s->wLength > max ? max : s->wLength;
   logreq('I', s, NULL, 0, s->bRequest != USBI_REQ_B1 && (s->bRequest < USBI_REQ_READ || s->bRequest > USBI_REQ_RD_STATUS));
+  note_req(s);
   switch (s->bRequest) {
   case USBI_REQ_B1:        buf[0] = 0; return 1;
   case USBI_REQ_READ:
     st_rd = spi ? spi_read(buf, n) : i2c_read(s, buf, n);
-    usbi_led_mode(spi); return n;
+    note_xfer(1, spi, s, n, st_rd); usbi_led_mode(spi); return n;
   case USBI_REQ_WR_STATUS: buf[0] = st_wr; st_wr = 0; return 1;
   case USBI_REQ_RD_STATUS: buf[0] = st_rd; st_rd = 0; return 1;
-  default:                 return -1;
+  default:                 note_unk(s); return -1;
   }
 }

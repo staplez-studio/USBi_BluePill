@@ -1,6 +1,6 @@
 <p align="center">
   <img src="https://github.com/staplez-studio/BluePill_Extra_Applications/blob/main/github-banner-1024x512.png?raw=true" alt="Staplez Studio Banner" width="85%" />
-</p>
+</p>UNDER CONSTRUCTION - DO NOT USE UNTIL NO WARNINGS
 
 # USBi Emulator for the STM32 Blue Pill Dx-Smart PJ26-v1.2 Edition (Based off Original-STM32F103C8)
 

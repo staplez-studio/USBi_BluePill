@@ -1,3 +1,4 @@
+DO NOT USE THIS BRANCH ITS BEING WORKED ON AND IS FULL OF DUPLICATE CODE
 <p align="center">
   <img src="https://github.com/staplez-studio/BluePill_Extra_Applications/blob/main/github-banner-1024x512.png?raw=true" alt="Staplez Studio Banner" width="85%" />
 </p>UNDER CONSTRUCTION - DO NOT USE UNTIL NO WARNINGS

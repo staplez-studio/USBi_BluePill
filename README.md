@@ -19,7 +19,7 @@ Makes an STM32 Blue Pill Dx-Smart PJ26-v1.2 Edition appear to Windows and SigmaS
 ### Note from Staplez Studio
 I made this version because I actually don't own a original off the shelf STM32F103C8 witch what the code was originally written for. I did how ever have a BluePill The Dx-Smart-PJ26-v1.2 not expensive for what it is. I truly just wanted to help out the community,this edition of my firm ware has an option for a screen.
 
-* **Bug Reports & Feature Requests:** I will lo#####ok over any bug reports and add features on any reasonable request if it pertains to the project and adds benefit to the user or usability of the device. Reach out at **StaplezStudio@gmail.com**.
+* **Bug Reports & Feature Requests:** I will look over any bug reports and add features on any reasonable request if it pertains to the project and adds benefit to the user or usability of the device. Reach out at **StaplezStudio@gmail.com**.
 
 ################### GENERIC INSTRUCTIONS  ##################### subject to change<<<<<<<<<<<<<<<
 ---

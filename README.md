@@ -45,6 +45,27 @@ I made this because the official USBi is extremely expensive for what it is and 
 3. Set `BOOT0` back to `0` and replug the board. The `PC13` LED should blink, and Windows should recognize the device as **"Analog Devices USBi (programmed)"**.
 4. Open SigmaStudio, monitor the serial debug log on `PA9` (`115200 8N1`), and send the log if anything fails.
 
+## Credits and licence
+Copyright (c) 2026 **Staplez Studio**.
+
+**Free for personal, non-commercial use. Commercial use needs a licence: contact Staplez Studio first.** Full terms in [LICENSE.md](LICENSE.md).
+
+All original application code, screen layouts, weather and status icons, bitmaps and artwork in this repository are the work of Staplez Studio, except where listed below.
+
+### Third-party credits
+| Who | What |
+|---|---|
+| STMicroelectronics | `Drivers/STM32F1xx_HAL_Driver`, the CMSIS device headers (`stm32f103xb.h`, `stm32f1xx.h`, `system_stm32f1xx.h`) and `Core/Startup/startup_stm32f103c8tx.s`, from the STM32CubeF1 / CubeMX tooling. **Restore ST's original licence notices** (they are not in this tree). Some headers were trimmed. |
+| Arm | `Drivers/CMSIS/Include/core_cm3.h` (CMSIS-Core). **Restore the original Apache-2.0 notice.** |
+| RealNetworks (Helix), Phil Schatzmann (`arduino-libhelix`), Earle Philhower (ESP8266Audio lineage) | MP3 decoder library used by the ESP32-CAM sketch (`tools/esp32cam_bridge`). Not bundled; the decoder code is under the RealNetworks Public Source License. Read it before sharing a compiled cam binary. |
+| Espressif | Arduino-ESP32 core and I2S driver used by the cam sketch; the AT command style follows ESP-AT; the DTR/RTS auto-reset convention in the USB adapter. |
+| Igor Chubin (wttr.in) | Public weather service queried over HTTP (project licence: Apache-2.0). No attribution is required by its page; credited as a courtesy. |
+| NTP Pool Project | `pool.ntp.org` time servers. For a commercial product use a vendor zone. |
+| pid.codes | USB ID 1209:0001 in the USB adapter, their test pair (testing only). |
+| USB-IF, Solomon Systech / Sino Wealth, DFRobot, Analog Devices, RDM6300/EM4100 makers | Specifications and datasheets followed by the USB adapter, the OLED driver, the DFPlayer, the ADAU1401/1701 and the RFID reader code (written from the documents, no code copied). |
+| DX-SMART | The PJ26 development board. |
+| LLVM Project | clang and lld, used to build the USB adapter firmware (not distributed). |
+
 ---
 
 ## Support the Project

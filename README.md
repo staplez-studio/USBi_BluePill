@@ -1,5 +1,5 @@
 
-If you use plan to use this just know I don't own the hardware to test the code this was written for.<br>This has branch with the jp26 if you plan to use this and not the branch you are doing so with UNTESTED firmware.
+If you use plan to use this just know I don't own the hardware to test the code this was written for.<br>This has branch with the jp26 https://github.com/staplez-studio/USBi_BluePill/tree/Dx-Smart-PJ26-v1.2-Edition if you plan to use the main and not the branch you are doing so with UNTESTED firmware.
 <br>
 
 <p align="center">

@@ -1,6 +1,6 @@
 
-DO NOT USE UNTESTED 
-
+If you use plan to use this just know I don't own the hardware to test the code this was written for.<br>This has branch with the jp26 if you plan to use this and not the branch you are doing so with UNTESTED firmware.
+<br>
 
 <p align="center">
   <img src="https://github.com/staplez-studio/BluePill_Extra_Applications/blob/main/github-banner-1024x512.png?raw=true" alt="Staplez Studio Banner" width="85%" />

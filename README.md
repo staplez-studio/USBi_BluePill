@@ -23,7 +23,7 @@ Makes an STM32 Blue Pill appear to Windows and SigmaStudio as an Analog Devices 
 ### Note from Staplez Studio
 I made this because the official USBi is extremely expensive for what it is and can be hard to source. I truly just wanted to save people time and money—if it were reasonably priced and easy to get quickly, this project would have never happened.
 
-* **Bug Reports & Feature Requests:** I will look over any bug reports and add features on any reasonable request if it pertains to the project and adds benefit to the user or usability of the device. Reach out at **StaplezStudio@gmail.com**.
+* **Bug Reports & Feature Requests:** I will look over any bug reports and add features on any reasonable request if it pertains to the project and adds benefit to the user or usability of the device. Reach out at **StaplezStudio@gmail.com**. PLEASE DON'T SEND ME BUG REPORTS FOR THE MAIN as I'm not currently working on it. feel free to fork your own as long as you stay within the licenses.
 
 ---
 

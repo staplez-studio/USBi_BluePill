@@ -1,0 +1,480 @@
+<!doctype html><html><head><meta charset="utf-8"><title>USBi DX-PJ26 guide</title><style>body{font-family:Segoe UI,Arial,sans-serif;max-width:960px;margin:2em auto;padding:0 1em;line-height:1.5;color:#1a1a1a}
+code,pre{background:#f3f3f3;border-radius:4px}code{padding:1px 4px}pre{padding:10px;overflow-x:auto}
+table{border-collapse:collapse;margin:1em 0}td,th{border:1px solid #bbb;padding:5px 9px;vertical-align:top}th{background:#eee}
+blockquote{border-left:4px solid #e0a000;background:#fff8e6;margin:1em 0;padding:.5em 1em}h1,h2{border-bottom:1px solid #ddd;padding-bottom:.2em}</style></head><body><h1>USBi emulator for the DX-SMART DX-PJ26: complete guide from zip to SigmaStudio</h1>
+<blockquote>
+<p><strong>Status, read this first.</strong> The firmware compiles, the Intel hex files are validated, and the request-to-I2C/SPI translation and the
+OLED screen logic are tested on a PC against simulated devices. The protocol was reverse-engineered from the USBi firmware image
+you supplied. It has <strong>not yet been tested against real SigmaStudio on real hardware.</strong> That first run is the job of this guide,
+and the debug log exists so that, if anything is missing, we can see exactly what SigmaStudio asks for.</p>
+</blockquote>
+<hr />
+<h2>0. Open the zip</h2>
+<ol>
+<li>Save <code>USBi_Emulator_PJ26_v1.1.zip</code> somewhere simple, for example your Desktop.</li>
+<li><strong>Right-click the zip, choose Extract All...</strong>, pick a folder such as <code>C:\USBi_Emulator_PJ26</code>, and press Extract. (Do not run files from inside the zip preview; extract first.)</li>
+<li>Open the extracted folder. This guide is <code>docs\USBi_PJ26_Guide.html</code> (double-click opens it in your browser). <code>docs\PINOUT.html</code> is the pin and wiring sheet: print it.</li>
+</ol>
+<hr />
+<h2>1. What is in the zip</h2>
+<pre><code>USBi_Emulator_PJ26/
+|-- README.md
+|-- docs/
+|   |-- USBi_PJ26_Guide.html / .md   this guide
+|   |-- PINOUT.html / .md                pins and wiring diagrams (print this)
+|   `-- PROTOCOL.md                      the USBi protocol as decoded from the firmware
+|-- firmware/
+|   |-- hex/
+|   |   |-- USBi_PJ26_LOG_CH340.hex  &lt;-- flash THIS first: debug log appears on the board's own USB-C COM port
+|   |   |-- USBi_PJ26_LOG_PA2.hex        same, but the log is on pin PA2 (needs an external USB-serial adapter)
+|   |   |-- USBi_PJ26_RUN.hex            final version, no log
+|   |   `-- (a .bin of each)
+|   |-- Makefile, STM32F103C8_FLASH.ld   rebuild from source (section 11)
+|   |-- Core/, USBi/                     main program, USB class, I2C/SPI, OLED screen
+|   |-- Drivers/, Middlewares/           ST HAL, CMSIS and USB device library (unmodified)
+|   `-- licenses/
+`-- host_tests/                          PC tests of the translation layer and the OLED screen (optional)
+</code></pre>
+<hr />
+<h2>2. What you need</h2>
+<p><strong>Hardware</strong>
+- <strong>DX-SMART DX-PJ26</strong> board (STM32F103C8T6 + CH340 USB-serial) with the <strong>LoRa module removed</strong>.
+- <strong>USB-C cable</strong> for the board's own port (power, flashing, optional log).
+- <strong>A USB-C breakout board</strong> (D+, D-, GND pads) and a cable from it to a second PC USB port.
+- <strong>One 1.5 kohm resistor</strong> (USB D+ pull-up, PA12 to 3.3 V).
+- <strong>1.3 inch I2C OLED</strong> (4 pins: VCC, GND, SCL, SDA), optional but recommended.
+- Jumper wires; two 4.7 kohm resistors for I2C pull-ups only if the DSP board has none.
+- Your DSP target board (I2C or SPI, <strong>3.3 V I/O</strong>).
+- Optional: a 3.3 V USB-serial adapter (only for the <code>_LOG_PA2</code> firmware); an ST-Link V2 (fallback flashing).</p>
+<p><strong>Software (Windows PC)</strong>
+- <strong>SigmaStudio</strong>, installed (it provides the Analog Devices USB driver files).
+- <strong>MCUISP</strong> (free Windows UART flasher for STM32).
+- The <strong>CH340 driver</strong> if Windows does not already show a COM port for the board.
+- A serial terminal (Tera Term, PuTTY, HTerm or similar) for the log.</p>
+<hr />
+<h2>3. Prepare the board</h2>
+<ol>
+<li>Make sure the <strong>LoRa module is not fitted</strong>. The module's pins are PA0 to PA7 and PC15, the same pins the emulator drives; leaving it fitted would make them fight.</li>
+<li>Look at the board and find: the <strong>USB-C connector</strong>, the <strong>CH340 chip</strong> (small 10- or 16-leg chip near it), the <strong>STM32</strong> (largest chip), the <strong>RST</strong> button, the <strong>user LED</strong>, the <strong>SWD header</strong> (4 pins V G D C) and the <strong>P3</strong> header.</li>
+<li><strong>Verify the USB lines are separate</strong> (this one check protects the whole project). With the board unplugged, set the multimeter to continuity: the board's <strong>USB-C D+ / D- pads must have no connection to PA12 / PA11</strong>. If they do beep, stop and tell me.</li>
+<li>Do not connect the breakout or the OLED yet.</li>
+</ol>
+<hr />
+<h2>4. Pinout and wiring</h2>
+<p>See <strong><code>PINOUT.md</code></strong> for the complete tables and diagrams. In short:</p>
+<table>
+<thead>
+<tr>
+<th>What</th>
+<th>Pins</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>USB to the PC (breakout)</td>
+<td><strong>PA12 = D+ (plus 1.5 kohm to 3V3), PA11 = D-, GND</strong></td>
+</tr>
+<tr>
+<td>OLED</td>
+<td><strong>PB13 = SCL, PB14 = SDA</strong>, 3V3, GND</td>
+</tr>
+<tr>
+<td>I2C to the DSP</td>
+<td><strong>PA0 = SCL, PA1 = SDA</strong></td>
+</tr>
+<tr>
+<td>SPI to the DSP</td>
+<td><strong>PA5 = SCLK, PA6 = MISO, PA7 = MOSI, PA4 = CS1</strong> (PB0, PB1, PB10, PC13 = CS2 to CS5)</td>
+</tr>
+<tr>
+<td>Target reset (B7)</td>
+<td>PA3 (open-drain)</td>
+</tr>
+<tr>
+<td>AUX lines (B8, B9)</td>
+<td>PC14, PC15 (slow outputs)</td>
+</tr>
+<tr>
+<td>Heartbeat LED</td>
+<td>PB11 (the board's user LED)</td>
+</tr>
+<tr>
+<td>Debug log</td>
+<td>PA9 via the board's own COM port (<code>_LOG_CH340</code>), or PA2 (<code>_LOG_PA2</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>All logic is <strong>3.3 V</strong>. Join all grounds. Do <strong>not</strong> connect the breakout's VBUS to anything.</p>
+<p><strong>Wire it up now, with everything unplugged</strong>: (1) 1.5 kohm resistor from PA12 to 3V3; (2) breakout D+ to PA12, D- to PA11, GND to GND; (3) OLED to PB13 / PB14 / 3V3 / GND. Leave the DSP unconnected until the first test works.</p>
+<hr />
+<h2>5. Windows driver</h2>
+<p>The firmware identifies itself as <code>USB\VID_0456&amp;PID_7031</code> ("USBi (programmed)"). Analog Devices' driver package already has an entry for that exact ID, and binds it to Cypress's generic <code>CyUSB</code> driver. The firmware-download step in that package applies only to the other ID (<code>PID_7030</code>), so it is not used here.</p>
+<ol>
+<li><strong>Is the driver already installed?</strong> If SigmaStudio was installed with its USB driver, the file <code>C:\Windows\System32\drivers\CyUSB.sys</code> typically exists. If so, skip to section 6.</li>
+<li><strong>Otherwise install it.</strong> Open the SigmaStudio USB driver folder (the one holding <code>CyUSB.inf</code>, <code>CyUSB.sys</code>, <code>CyUSB.cat</code>, <code>dpinst32.exe</code>, <code>dpinst64.exe</code>). On 64-bit Windows right-click <strong><code>dpinst64.exe</code></strong>, <strong>Run as administrator</strong>, and follow the wizard (<code>dpinst32.exe</code> on 32-bit Windows).</li>
+<li>If that fails: Device Manager, right-click the device, <em>Update driver, Browse my computer, Let me pick, Have Disk...</em>, browse to <code>CyUSB.inf</code>, choose <strong>Analog Devices USBi (programmed)</strong>.</li>
+<li>Windows may refuse an unsigned or old driver depending on its policy. The package carries an Analog Devices catalog (<code>CyUSB.cat</code>), which normally satisfies it.</li>
+</ol>
+<p>The <strong>CH340 driver</strong> (for the board's COM port) is separate: Windows 10/11 normally installs it automatically. If the board shows no COM port in Device Manager, install the CH340 driver from WCH.</p>
+<hr />
+<h2>6. Flash the firmware with MCUISP over the board's USB-C port</h2>
+<p>The board's USB-C goes to a CH340 chip wired to the STM32's serial bootloader pins, so MCUISP flashes it directly. <strong>No jumper wires, no adapter.</strong></p>
+<ol>
+<li><strong>Unplug the USB-C breakout cable</strong> (the emulator side). Plug <strong>only the board's own USB-C cable</strong> into the PC.</li>
+<li>In <strong>Device Manager, Ports (COM and LPT)</strong> find "USB-SERIAL CH340 (COMx)" and note the COM number.</li>
+<li>Start <strong>MCUISP</strong>. (Some versions are mostly Chinese; the functions below are the same, labels may differ slightly.)</li>
+<li><strong>Open the file:</strong> <code>firmware\hex\USBi_PJ26_LOG_CH340.hex</code>.</li>
+<li><strong>Port and speed:</strong> select your COMx; baud rate <strong>115200</strong> (the first time; faster speeds are fine later).</li>
+<li><strong>Auto-entry setting.</strong> DX-SMART's own troubleshooting guide for the PJ26 gives: <strong><code>Reset@DTR High(&gt;+3V), ISP@RTS Low</code></strong>. Select that option in MCUISP's DTR/RTS drop-down.
+   A community guide for the earlier V1.1 board uses <strong><code>Reset@DTR Low(&lt;-3V), ISP@RTS Low</code></strong>; try it if the first fails.</li>
+<li><strong>Tick:</strong> Verify; Run after programming. Leave option bytes and read-protection options alone.</li>
+<li>Click <strong>Read ChipInfo</strong> (or the start/connect button) and <strong>immediately press the board's RST button.</strong> Several users report this timing is what makes it connect on the DX-PJ26.
+   The chip ID is normally <code>0x410</code> for an STM32F103.</li>
+<li>Click <strong>Start programming</strong>. Watch the log: erase, programming to 100 %, <strong>verify OK</strong>, run.</li>
+<li>Press <strong>RST</strong> (or replug the board's USB-C). The user LED (PB11) should blink once per second, and the OLED (if fitted) shows the status screen.</li>
+</ol>
+<h3>If connecting fails</h3>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"No response from the bootloader"</td>
+<td>Press RST <em>right after</em> clicking connect (step 8). Try the other DTR/RTS option (step 6). Try a lower baud rate (57600)</td>
+</tr>
+<tr>
+<td>Wrong COM port / busy</td>
+<td>Close any terminal using the COM port. Check the COM number again</td>
+</tr>
+<tr>
+<td>Works only sometimes</td>
+<td>Use a short USB cable and a direct PC port (not a hub)</td>
+</tr>
+<tr>
+<td>Never connects</td>
+<td><strong>Fallback with an ST-Link V2:</strong> wire ST-Link GND, SWDIO, SWCLK to the board's SWD header pins G, D, C (leave V disconnected if the board is USB-powered) and flash the <code>.hex</code> with STM32CubeProgrammer</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Caution about DTR / RTS.</strong> On this board a control line of the CH340 also reaches the STM32's BOOT0 / reset. Some terminal programs assert DTR/RTS when they open the COM port, which can reset the board or send it into the bootloader the next time it resets. If the board stops running when you open a terminal, use a terminal that lets you turn DTR/RTS off, or use the <code>_LOG_PA2</code> firmware with an external adapter instead.</p>
+</blockquote>
+<hr />
+<h2>7. First power-up and USB check</h2>
+<ol>
+<li>Plug the <strong>USB-C breakout cable</strong> into a <strong>second</strong> PC USB port. (The board's own USB-C stays plugged in for power.)</li>
+<li><strong>Device Manager</strong> should show <strong>"Analog Devices USBi (programmed)"</strong> (under <em>Universal Serial Bus controllers</em> or <em>devices</em>). Properties, Details, <em>Hardware Ids</em> must show <code>USB\VID_0456&amp;PID_7031</code>.</li>
+<li><strong>If you see "Unknown USB Device (Device Descriptor Request Failed)":</strong> check the 1.5 kohm pull-up (PA12 to 3V3), D+/D- not swapped, short wires, and GND joined; replug.</li>
+<li><strong>If it shows the right ID but with a warning and no driver:</strong> install the driver (section 5).</li>
+<li><strong>The OLED tells you how far it got</strong> (top right of the screen):</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>---</code></td>
+<td>USB not started or no host</td>
+</tr>
+<tr>
+<td><code>DEF</code></td>
+<td>The PC reset the bus but did not finish enumeration (check D+/D-, pull-up, cable)</td>
+</tr>
+<tr>
+<td><code>ADR</code></td>
+<td>Enumerated, address assigned, but no driver has configured it (install the driver)</td>
+</tr>
+<tr>
+<td><code>CFG</code></td>
+<td><strong>Driver loaded and the device is configured. This is the goal.</strong></td>
+</tr>
+<tr>
+<td><code>SUS</code></td>
+<td>Bus suspended (PC asleep, or cable unplugged)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>8. OLED screen</h2>
+<p>Eight lines of 21 characters, refreshed about ten times a second:</p>
+<pre><code>USBi 0456:7031    CFG      &lt;- title and USB state (section 7)
+Bus I2C   Addr 0x34        &lt;- bus of the last transfer and its address (SPI shows the chip-select)
+Last WR 00004B  OK         &lt;- last write: bytes and result (OK / NACK / BERR)
+Last RD 00002B  OK         &lt;- last read: bytes and result
+WR 00012 RD 00005          &lt;- total write / read transfers
+NACK 003 BERR 000          &lt;- slave-did-not-answer and bus-error counts
+B2 v0034 i0000 l0004       &lt;- last request: code, wValue, wIndex, wLength
+Unk C3 x02 Up 0:12:34      &lt;- last request NOT understood (and how many), then uptime
+</code></pre>
+<p><code>Unk</code> is the quick way to see an unsupported request without a terminal.</p>
+<p><strong>If your OLED misbehaves</strong> (rebuild with the settings in section 12):
+- Nothing at all: check wiring (PB13 = SCL, PB14 = SDA), 3.3 V, address 0x3C (some modules are 0x3D). The firmware simply skips the display if it gets no answer.
+- Picture shifted by two pixels or garbage: the module is an SSD1306, not an SH1106 (<code>OLED_SH1106=0</code>).
+- Upside down: set <code>OLED_FLIP=0</code>.</p>
+<hr />
+<h2>9. First test with SigmaStudio and capturing the log</h2>
+<ol>
+<li><strong>Get the log.</strong> Pick one:</li>
+<li><strong><code>_LOG_CH340</code> firmware (the one you flashed):</strong> the log comes out on the board's own COM port. Open a terminal on that COMx at <strong>115200, 8N1, no flow control</strong>, with DTR/RTS off if the program allows it.</li>
+<li><strong><code>_LOG_PA2</code> firmware:</strong> connect a 3.3 V USB-serial adapter's <strong>RX to PA2</strong> and GND to GND, and open the adapter's COM port at 115200 8N1.</li>
+<li><strong>Wire the DSP</strong> (PINOUT.md sections 4 / 5) with its power off, then power it on.</li>
+<li>Start <strong>SigmaStudio</strong>, set up your project and hardware configuration as for a normal USBi, and confirm the USBi is detected. Run <strong>Link-Compile-Download</strong>.</li>
+<li><strong>Watch the terminal and the OLED.</strong> Each request is one line, for example:</li>
+</ol>
+<pre><code>O rt=40 rq=B2 v=0034 i=0000 l=0004 : 00 10 AA BB     &lt;- write sub-address 0x0010 + data to I2C 0x34
+I rt=C0 rq=B5 v=0000 i=0000 l=0001                    &lt;- host asks for the write status
+O rt=40 rq=B3 v=0034 i=0000 l=0002 : 00 10            &lt;- set sub-address for a read
+I rt=C0 rq=B4 v=0034 i=0000 l=0002                    &lt;- read 2 bytes
+I rt=C0 rq=B6 v=0000 i=0000 l=0001                    &lt;- read status
+O rt=40 rq=C3 v=0000 i=0000 l=0000 !                  &lt;- &quot;!&quot; = a request the emulator does NOT know
+</code></pre>
+<p><code>O</code> = host to device, <code>I</code> = device to host; <code>rt</code> request type, <code>rq</code> request code, <code>v</code>/<code>i</code>/<code>l</code> = wValue/wIndex/wLength; a trailing <strong><code>!</code></strong> marks an unimplemented request.
+5. <strong>Save the log</strong> (the terminal's "log to file" option) and <strong>send it to me, especially any <code>!</code> lines.</strong></p>
+<p>Success: SigmaStudio finishes the download without an error, the DSP's parameters change, and no <code>!</code> lines (or <code>Unk</code> counts) appear.</p>
+<hr />
+<h2>10. When it works: switch to the RUN firmware</h2>
+<p>The LOG firmware prints inside the USB interrupt, which adds a few milliseconds per request. Once everything works, reflash with <strong><code>USBi_PJ26_RUN.hex</code></strong> (section 6, with the breakout cable unplugged). The OLED screen stays.</p>
+<hr />
+<h2>11. Rebuilding from source</h2>
+<p>You do not need this to use the board; the hex files are compiled. Use it to change pins, speeds or the display.</p>
+<ol>
+<li>Install the <strong>Arm GNU Toolchain</strong> (<code>arm-none-eabi-gcc</code>) and <code>make</code>. On Windows the easiest source of both is <strong>STM32CubeIDE</strong>, which bundles them inside its installation folder (look under the IDE's <code>plugins</code> folder for <code>gnu-tools-for-stm32</code> and the bundled <code>make</code>); add their <code>bin</code> folders to PATH. Alternatively use MSYS2 (<code>pacman -S make mingw-w64-ucrt-x86_64-arm-none-eabi-gcc</code>).</li>
+<li>Open a terminal in <code>firmware/</code> and run:
+   <code>make clean
+   make all-hex</code>
+   This builds the three hex files into <code>firmware/hex/</code>. Other forms: <code>make LOG=0</code> (RUN only), <code>make LOG=1 LOGUART=1</code> (log on PA9), <code>make LOG=1 LOGUART=2</code> (log on PA2).</li>
+<li><strong>STM32CubeIDE:</strong> <em>File, New, Makefile Project with Existing Code</em>, pick the <code>firmware</code> folder, then <em>Project, Build All</em>. Flash the resulting <code>.hex</code> with MCUISP as in section 6.</li>
+</ol>
+<h3>Verify your files</h3>
+<p>SHA-256 of the supplied hex files (Windows: <code>certutil -hashfile &lt;file&gt; SHA256</code>):</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Size (bytes)</th>
+<th>SHA-256</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>USBi_PJ26_LOG_CH340.hex</code></td>
+<td>49971</td>
+<td><code>234e8304523ebe878995d9e5b06247a3d6406cbb24b3956a9a24ffefae8daabc</code></td>
+</tr>
+<tr>
+<td><code>USBi_PJ26_LOG_PA2.hex</code></td>
+<td>49971</td>
+<td><code>97937f083ba79c8e66754ebee14555695d11282d3667d5b7d48878b7379673bb</code></td>
+</tr>
+<tr>
+<td><code>USBi_PJ26_RUN.hex</code></td>
+<td>48404</td>
+<td><code>36b6e629bd8e03f9fb9b446159f1b7663cd74f4b375327c0c7137e8817e5bcf1</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>12. Configuration options</h2>
+<p>Pass them to make, for example <code>make all-hex EXTRA_DEFS="-DUSBI_I2C_HZ=400000 -DOLED_SH1106=0"</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>USBI_I2C_HZ</code></td>
+<td>100000</td>
+<td>I2C clock to the DSP (try 400000 if the target allows)</td>
+</tr>
+<tr>
+<td><code>USBI_SPI_HZ</code></td>
+<td>500000</td>
+<td>SPI clock</td>
+</tr>
+<tr>
+<td><code>USBI_BUF_SIZE</code></td>
+<td>4096</td>
+<td>Largest single transfer accepted</td>
+</tr>
+<tr>
+<td><code>OLED_SH1106</code></td>
+<td>1</td>
+<td>1 = SH1106 (typical 1.3 inch), 0 = SSD1306</td>
+</tr>
+<tr>
+<td><code>OLED_FLIP</code></td>
+<td>1</td>
+<td>0 = rotate the picture 180 degrees</td>
+</tr>
+<tr>
+<td><code>OLED_ADDR8</code></td>
+<td>0x78</td>
+<td>OLED I2C address, 8-bit form (0x78 = 7-bit 0x3C, 0x7A = 0x3D)</td>
+</tr>
+<tr>
+<td><code>OLED_I2C_HZ</code></td>
+<td>400000</td>
+<td>OLED bus speed (try 100000 if the display is flaky)</td>
+</tr>
+<tr>
+<td><code>BOARD</code></td>
+<td><code>PJ26</code></td>
+<td><code>make BOARD=BLUEPILL ...</code> for a standard Blue Pill (LED on PC13, CS5 on PB11)</td>
+</tr>
+</tbody>
+</table>
+<p>Pin assignments are in <code>firmware/USBi/usbi_hw.c</code>, <code>board.h</code> and <code>oled_hw.c</code>.</p>
+<hr />
+<h2>13. Troubleshooting</h2>
+<table>
+<thead>
+<tr>
+<th>Problem</th>
+<th>Likely cause and fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No heartbeat blink, OLED blank</td>
+<td>Firmware not running: flashing failed, or not reset after flashing. Press RST. Re-flash (section 6)</td>
+</tr>
+<tr>
+<td>Terminal shows nothing</td>
+<td><code>_LOG_CH340</code>: right COM port (the board's, not the breakout's)? 115200 8N1? <code>_LOG_PA2</code>: adapter RX on PA2? Only the LOG firmware prints</td>
+</tr>
+<tr>
+<td>Board resets or stops when the terminal opens</td>
+<td>The terminal asserts DTR/RTS (see the caution in section 6). Turn DTR/RTS off, or use <code>_LOG_PA2</code></td>
+</tr>
+<tr>
+<td>Windows: "device descriptor request failed" / OLED <code>DEF</code></td>
+<td>1.5 kohm pull-up missing, D+/D- swapped or loose, long wires, ground not joined</td>
+</tr>
+<tr>
+<td>OLED <code>ADR</code>, never <code>CFG</code></td>
+<td>The driver is not installed or not bound (section 5)</td>
+</tr>
+<tr>
+<td>OLED <code>CFG</code> but SigmaStudio sees no USBi</td>
+<td>Hardware Ids must be <code>VID_0456&amp;PID_7031</code>; close and reopen SigmaStudio; replug the breakout. Check the log: if no requests appear, SigmaStudio never reached the device</td>
+</tr>
+<tr>
+<td>Log or OLED shows <code>!</code> / <code>Unk</code></td>
+<td>A request the emulator does not implement. Send me the log</td>
+</tr>
+<tr>
+<td>Writes report NACK</td>
+<td>DSP did not answer: wrong address, no pull-ups on SDA/SCL, wiring, target unpowered</td>
+</tr>
+<tr>
+<td>BERR</td>
+<td>SDA or SCL stuck low: short, or missing ground</td>
+</tr>
+<tr>
+<td>Reads return zeros / garbage</td>
+<td>Check the sub-address bytes in the log (B3 data) and the DSP address pins</td>
+</tr>
+<tr>
+<td>SPI does nothing</td>
+<td>Chip-select: <code>wIndexH</code> selects CS1 to CS5 (PA4, PB0, PB1, PB10, PC13)</td>
+</tr>
+<tr>
+<td>MCUISP cannot connect</td>
+<td>See the table in section 6</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>14. Known limitations</h2>
+<ul>
+<li><strong>Untested with real SigmaStudio hardware.</strong> Everything is compiled and unit-tested, not field-tested.</li>
+<li><strong>Full-speed only.</strong> The real USBi is a high-speed device; the F103 is full-speed. The Cypress driver should not mind, but SigmaStudio might.</li>
+<li>The purposes of requests <strong>B1, B8, B9</strong> and of an extra host command (called "reset toggle" in the SigmaStudio library) are <strong>not fully known</strong>. B7 is a reset pulse. Unknown requests are stalled and flagged.</li>
+<li>I2C and SPI are <strong>bit-banged</strong>: I2C 100 kHz, SPI about 500 kHz, so large downloads are slower than a real USBi's SPI.</li>
+<li>Writes up to 4096 bytes per transfer are accepted (SigmaStudio's host library appears to send data in 64-byte packs).</li>
+<li>PC13 to PC15 are limited (3 mA, 2 MHz); the original's two mode LEDs are not implemented.</li>
+<li>The USB D+ pull-up is a fixed resistor, so the board announces itself to the PC even before the firmware runs. Unplug the breakout cable while flashing.</li>
+<li>The DX-PJ26 details (PA11/PA12 on header P3 and separate from the CH340, user LED on PB11) come from the schematic summary and a V1.2 write-up; <strong>check them on your board</strong> (section 3).</li>
+</ul>
+<hr />
+<h2>15. Safety, legal and licences</h2>
+<ul>
+<li><strong>Electrical:</strong> 3.3 V logic only, common ground, do not hot-plug wires with power applied, avoid static. Never connect the breakout's VBUS to the board's 3.3 V.</li>
+<li><strong>USB IDs:</strong> <code>0x0456</code> is Analog Devices' USB vendor ID and "USBi" is their product name. This firmware imitates that ID <strong>for personal, compatibility use with your own SigmaStudio installation</strong>. Do not sell or distribute hardware using that ID.</li>
+<li><strong>What is not included:</strong> no Analog Devices or Cypress software, driver or firmware is in this zip. The device descriptors and protocol were derived by analysing files from your own SigmaStudio installation, for interoperability.</li>
+<li><strong>Third-party code</strong> in <code>firmware/Drivers</code>, <code>firmware/Middlewares</code> (STMicroelectronics HAL, CMSIS, USB device library) is unmodified, and the OLED font is generated from the Spleen font (BSD-2-Clause, Frederic Cambus). Licences are in <code>firmware/licenses/</code>.</li>
+<li>The emulator sources are provided for your personal use, <strong>without warranty</strong>.</li>
+</ul>
+<hr />
+<h2>Appendix A: using a standard Blue Pill instead</h2>
+<p>Build with <code>make BOARD=BLUEPILL all-hex</code> (LED on PC13, CS5 on PB11). A Blue Pill has its USB connector wired to PA11/PA12 already, so no breakout is needed (check its D+ pull-up R10 is 1.5 kohm). It has no CH340: flash through the chip's serial bootloader with a 3.3 V USB-serial adapter (adapter TXD to PA10, RXD to PA9, GND to GND), BOOT0 jumper to 1, press reset, program with MCUISP, then BOOT0 back to 0. The log then needs the <code>_LOG_PA2</code> build and the adapter RX moved to PA2.</p>
+<h2>Appendix B: the protocol in one table</h2>
+<table>
+<thead>
+<tr>
+<th>bRequest</th>
+<th>Dir</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B0</td>
+<td></td>
+<td>no-op</td>
+</tr>
+<tr>
+<td>B1</td>
+<td>IN 1 byte</td>
+<td>returns 0</td>
+</tr>
+<tr>
+<td>B2</td>
+<td>OUT</td>
+<td>write: <code>wValueL</code> = address, <code>wIndexL</code> 0 = I2C / nonzero = SPI, <code>wIndexH</code> = SPI CS 1 to 5; data = payload; then STOP / CS release</td>
+</tr>
+<tr>
+<td>B3</td>
+<td>OUT</td>
+<td>same, but bus held: the register address before a read</td>
+</tr>
+<tr>
+<td>B4</td>
+<td>IN</td>
+<td>read <code>wLength</code> bytes (repeated START for I2C; SPI continues with CS held)</td>
+</tr>
+<tr>
+<td>B5</td>
+<td>IN 1 byte</td>
+<td>status of last B2/B3 (1 OK, 3 no ACK, 4 bus error)</td>
+</tr>
+<tr>
+<td>B6</td>
+<td>IN 1 byte</td>
+<td>status of last B4</td>
+</tr>
+<tr>
+<td>B7</td>
+<td></td>
+<td>target reset pulse (PA3)</td>
+</tr>
+<tr>
+<td>B8 / B9</td>
+<td></td>
+<td>AUX1 / AUX2 outputs (PC14 / PC15)</td>
+</tr>
+</tbody>
+</table>
+<p>Full details and evidence: <code>PROTOCOL.md</code>.</p></body></html>

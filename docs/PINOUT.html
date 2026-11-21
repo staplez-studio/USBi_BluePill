@@ -1,0 +1,206 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Pinout</title><style>body{font-family:Segoe UI,Arial,sans-serif;max-width:960px;margin:2em auto;padding:0 1em;line-height:1.5;color:#1a1a1a}
+code,pre{background:#f3f3f3;border-radius:4px}code{padding:1px 4px}pre{padding:10px;overflow-x:auto}
+table{border-collapse:collapse;margin:1em 0}td,th{border:1px solid #bbb;padding:5px 9px;vertical-align:top}th{background:#eee}
+blockquote{border-left:4px solid #e0a000;background:#fff8e6;margin:1em 0;padding:.5em 1em}h1,h2{border-bottom:1px solid #ddd;padding-bottom:.2em}</style></head><body><h1>Pinout and wiring: USBi emulator on the DX-SMART DX-PJ26 (STM32F103C8T6)</h1>
+<p>All signals are <strong>3.3 V logic</strong>. Never connect 5 V signals to any pin. Always join the grounds of the board, the USB-C breakout,
+the OLED and the target board. <strong>The LoRa module must NOT be fitted</strong> (it drives PA0 to PA7 and PC15).</p>
+<h2>Pins used by the firmware</h2>
+<p>Only <strong>PA0 to PA7, PB0, PB1, PB10, PB11, PC13, PC14, PC15</strong> are used for the USBi function, plus your two approved exceptions:
+<strong>PA11 / PA12</strong> (USB) and <strong>PB13 / PB14</strong> (OLED). Optionally <strong>PA9</strong> carries the debug log through the board's own USB-C serial port.</p>
+<h2>1. Pin assignment</h2>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Pin</th>
+<th>Direction</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>I2C SCL</strong> (to the DSP)</td>
+<td><strong>PA0</strong></td>
+<td>open-drain output</td>
+<td>Needs a pull-up to 3.3 V (about 4.7 kohm) unless the DSP board has one</td>
+</tr>
+<tr>
+<td><strong>I2C SDA</strong> (to the DSP)</td>
+<td><strong>PA1</strong></td>
+<td>open-drain, bidirectional</td>
+<td>Same</td>
+</tr>
+<tr>
+<td><strong>Debug log TX</strong> (<code>_LOG_PA2</code> firmware)</td>
+<td><strong>PA2</strong></td>
+<td>UART TX, 115200 8N1</td>
+<td>To an external USB-serial adapter's <strong>RX</strong></td>
+</tr>
+<tr>
+<td><strong>Target RESET</strong> (request B7)</td>
+<td><strong>PA3</strong></td>
+<td>open-drain, idles released</td>
+<td>Target needs a pull-up to 3.3 V (most DSP boards have one)</td>
+</tr>
+<tr>
+<td><strong>SPI CS1</strong></td>
+<td><strong>PA4</strong></td>
+<td>output, idles high</td>
+<td><code>wIndexH</code> = 1. <strong>Use this for a single DSP</strong></td>
+</tr>
+<tr>
+<td><strong>SPI SCLK</strong></td>
+<td><strong>PA5</strong></td>
+<td>output</td>
+<td>SPI mode 3 (idles high), MSB first, about 500 kHz</td>
+</tr>
+<tr>
+<td><strong>SPI MISO</strong></td>
+<td><strong>PA6</strong></td>
+<td>input (pull-up)</td>
+<td>DSP data out (CDATAO)</td>
+</tr>
+<tr>
+<td><strong>SPI MOSI</strong></td>
+<td><strong>PA7</strong></td>
+<td>output</td>
+<td>DSP data in (CDATA)</td>
+</tr>
+<tr>
+<td>SPI CS2</td>
+<td>PB0</td>
+<td>output, idles high</td>
+<td><code>wIndexH</code> = 2</td>
+</tr>
+<tr>
+<td>SPI CS3</td>
+<td>PB1</td>
+<td>output, idles high</td>
+<td><code>wIndexH</code> = 3</td>
+</tr>
+<tr>
+<td>SPI CS4</td>
+<td>PB10</td>
+<td>output, idles high</td>
+<td><code>wIndexH</code> = 4</td>
+</tr>
+<tr>
+<td>SPI CS5</td>
+<td>PC13</td>
+<td>output, idles high</td>
+<td><code>wIndexH</code> = 5 (slow pin: 2 MHz, about 3 mA limit)</td>
+</tr>
+<tr>
+<td><strong>Heartbeat LED</strong></td>
+<td><strong>PB11</strong></td>
+<td>output</td>
+<td>The user LED reported on the DX-PJ26 V1.2. Blinks once per second</td>
+</tr>
+<tr>
+<td>AUX1 (request B8, probably "power board")</td>
+<td>PC14</td>
+<td>push-pull, slow</td>
+<td>Idles high. Level = (<code>wValueL</code> != 0). Function inferred</td>
+</tr>
+<tr>
+<td>AUX2 (request B9, probably "LED")</td>
+<td>PC15</td>
+<td>push-pull, slow</td>
+<td>Idles high. Low when <code>wValueL</code> = 1. Function inferred</td>
+</tr>
+<tr>
+<td><strong>USB D-</strong></td>
+<td><strong>PA11</strong></td>
+<td>USB</td>
+<td>To your USB-C breakout's D- (exception)</td>
+</tr>
+<tr>
+<td><strong>USB D+</strong></td>
+<td><strong>PA12</strong></td>
+<td>USB</td>
+<td>To your USB-C breakout's D+ (exception), <strong>plus a 1.5 kohm resistor from PA12 to 3.3 V</strong></td>
+</tr>
+<tr>
+<td><strong>OLED SCL</strong></td>
+<td><strong>PB13</strong></td>
+<td>open-drain output</td>
+<td>1.3 inch I2C OLED, address 0x3C (exception)</td>
+</tr>
+<tr>
+<td><strong>OLED SDA</strong></td>
+<td><strong>PB14</strong></td>
+<td>open-drain, bidirectional</td>
+<td>Same</td>
+</tr>
+<tr>
+<td>Debug log TX (<code>_LOG_CH340</code> firmware)</td>
+<td>PA9</td>
+<td>UART TX</td>
+<td>Already wired on the board to the CH340 chip: the log appears on the board's own COM port</td>
+</tr>
+<tr>
+<td>CH340 RX (used when flashing)</td>
+<td>PA10</td>
+<td>UART RX</td>
+<td>Already wired on the board</td>
+</tr>
+</tbody>
+</table>
+<p>Limits of <strong>PC13, PC14, PC15</strong> (chip restriction): about 3 mA at up to 2 MHz, and they may share pins with an on-board 32.768 kHz crystal.
+They carry only slow, static signals (CS5 and the AUX outputs). The original USBi's two mode LEDs are not implemented.</p>
+<h2>2. Wiring: USB-C breakout (the emulator's USB connection)</h2>
+<p>The DX-PJ26's own USB-C port goes to a <strong>CH340 USB-serial chip</strong> and is used only for power, flashing and (optionally) the log.
+The emulator is a <strong>second USB connection</strong> straight from PA11 / PA12 to your USB-C breakout board.</p>
+<pre><code>  USB-C breakout                         DX-PJ26
+  --------------                         -------
+  D+  ---------------------------------- PA12
+  D-  ---------------------------------- PA11
+  GND ---------------------------------- GND
+  VBUS: leave unconnected                (the board is powered through its own USB-C cable)
+  CC1, CC2: 5.1 kohm to GND on the breakout (already fitted on most breakouts)
+
+                      3.3 V ---[ 1.5 kohm ]--- PA12      &lt;- REQUIRED: tells the PC &quot;full-speed device present&quot;
+</code></pre>
+<ul>
+<li>The 1.5 kohm resistor is <strong>required</strong>. The DX-PJ26 schematic has no pull-up on PA12, and USB-C breakouts do not fit one on D+.</li>
+<li>The breakout usually has <strong>two D+ and two D- pads</strong> (reversible connector); they are tied together on the breakout, so use either one.</li>
+<li>Use a <strong>USB-A to USB-C</strong> cable, or a USB-C to USB-C cable, from the PC to the breakout.</li>
+<li>The pull-up is always on. If the breakout cable is plugged in while the firmware is not running (for example while flashing), Windows shows an unknown device. Unplug the breakout cable while flashing.</li>
+<li>On the DX-PJ26, PA11 / PA12 come out on header <strong>P3</strong> (the schematic you read shows P3 pins 9 and 10; check the silkscreen on your board).
+  Before connecting, confirm with a multimeter (board unplugged) that PA11 / PA12 have <strong>no continuity</strong> to the board's own USB-C connector.</li>
+</ul>
+<h2>3. Wiring: OLED status display (optional)</h2>
+<pre><code>  1.3&quot; I2C OLED                          DX-PJ26
+  -------------                          -------
+  VCC ---------------------------------- 3V3
+  GND ---------------------------------- GND
+  SCL ---------------------------------- PB13
+  SDA ---------------------------------- PB14
+</code></pre>
+<p>The module has its own pull-ups. Most 1.3 inch modules use the <strong>SH1106</strong> controller (the default). Address 0x3C (the default).
+See the guide for the OLED screen layout and for the settings if your display is an SSD1306 or shows upside down.</p>
+<h2>4. Wiring: I2C target (for example an ADAU1701 board)</h2>
+<pre><code>  DX-PJ26                         Target DSP board
+  -------                         ----------------
+  PA0  (SCL) --------------------- SCL
+  PA1  (SDA) --------------------- SDA
+  GND ----------------------------- GND
+  PA3  (RESET, open-drain) -------- /RESET     (optional; needs a pull-up on the target)
+                  3.3 V ---[4.7k]--- SDA       (only if the target board has no pull-ups)
+                  3.3 V ---[4.7k]--- SCL       (only if the target board has no pull-ups)
+</code></pre>
+<p>The target's IOVDD must be <strong>3.3 V</strong>. Power the target from its own supply.</p>
+<h2>5. Wiring: SPI target</h2>
+<pre><code>  DX-PJ26                         Target DSP board
+  -------                         ----------------
+  PA5  (SCLK) -------------------- CCLK / SCLK
+  PA7  (MOSI) -------------------- CDATA / MOSI
+  PA6  (MISO) -------------------- CDATAO / MISO
+  PA4  (CS1)  -------------------- CLATCH / SS   (use CS1 for the first device)
+  GND ----------------------------- GND
+</code></pre>
+<p>For an I2C-only setup, leave the SPI wires disconnected.</p>
+<h2>6. Cables to the PC</h2>
+<pre><code>  PC USB port 1 ---- DX-PJ26 USB-C -----&gt; power (5 V -&gt; 3.3 V on board) + COM port (CH340): flashing, optional log
+  PC USB port 2 ---- USB-C breakout ----&gt; D+ / D- / GND only -&gt; PA12 / PA11 / GND  (this is the USBi seen by SigmaStudio)
+</code></pre></body></html>

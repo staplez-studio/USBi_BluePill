@@ -12,6 +12,7 @@
 ![USB ID](https://img.shields.io/badge/USB-0456%3A7031-blue)
 ![Bus](https://img.shields.io/badge/bus-I%C2%B2C%20%7C%20SPI-orange)
 ![Host](https://img.shields.io/badge/host-Windows%20%2B%20SigmaStudio-0078D6)
+![License](https://img.shields.io/badge/license-non--commercial%20%2B%20attribution-red)
 ![Status](https://img.shields.io/badge/real--hardware%20test-pending-yellow)
 
 [Overview](#overview) · [Quick Start](#quick-start) · [Hardware](#hardware) · [Flashing](#flashing) · [OLED](#oled-status-display) · [Testing](#first-test-with-sigmastudio) · [Troubleshooting](#troubleshooting) · [Protocol](#protocol-summary) · [Legal](#legal-and-safety)
@@ -45,7 +46,8 @@
 21. [Repository Layout](#repository-layout)
 22. [Contributing and Feedback](#contributing-and-feedback)
 23. [Legal and Safety](#legal-and-safety)
-24. [License and Third-Party Code](#license-and-third-party-code)
+24. [License](#license)
+25. [Credits and Sources](#credits-and-sources)
 
 ---
 
@@ -624,6 +626,7 @@ USBI_Setup()  ── non-vendor request ─────────────�
 ```text
 USBi_BluePill/
 ├── README.md
+├── LICENSE                          # Custom non-commercial license with attribution
 ├── docs/
 │   ├── USBi_PJ26_Guide.html / .md   # Complete setup guide
 │   ├── PINOUT.html / .md            # Pins and wiring diagrams (print this)
@@ -661,7 +664,7 @@ Pull requests for fixes and documentation are welcome.
 
 **USB IDs**
 - `0x0456` is Analog Devices' USB vendor ID and "USBi" is their product name. This firmware imitates that ID **for personal, compatibility use with your own SigmaStudio installation.**
-- **Do not sell or distribute hardware that uses that ID.**
+- **Do not sell or distribute hardware that uses that ID.** The project [license](#license) prohibits commercial distribution unless the Analog Devices VID is completely removed from any user-facing distribution.
 
 **What is not included**
 - No Analog Devices or Cypress software, driver or firmware is in this repository. The descriptors and protocol were derived by analysing files from the author's own SigmaStudio installation, for interoperability.
@@ -669,12 +672,75 @@ Pull requests for fixes and documentation are welcome.
 **Trademarks**
 - This is an independent community project, not affiliated with or endorsed by Analog Devices, Inc. *Analog Devices*, *USBi*, *SigmaDSP*, *SigmaStudio* and *Cypress* are trademarks of their respective owners.
 
-## License and Third-Party Code
+## License
 
-- The emulator sources are provided for personal use, **without warranty**. <!-- TODO: add a LICENSE file if you want to state formal terms -->
-- `firmware/Drivers` and `firmware/Middlewares` (STMicroelectronics HAL, CMSIS, USB device library) are **unmodified**.
-- The OLED font is generated from the **Spleen** font (BSD-2-Clause, Frederic Cambus).
-- Third-party licences are in `firmware/licenses/`.
+Copyright © 2026 **Staplez Studio**. All rights reserved. Released under a **custom free non-commercial license with an attribution requirement**. The full text is in [`LICENSE`](LICENSE) and is the only authoritative version. A summary:
+
+| | |
+|---|---|
+| ✅ **Allowed (free)** | Use, copy and modify the software for **non-commercial purposes only** |
+| 📌 **Attribution required** | Any use, distribution or derivative work must give **clear, visible credit to the original author (Staplez Studio)** in the resulting project, product, documentation or distribution, **including a link to the original repository** |
+| 📌 **Notice retention** | The copyright notice and permission notice must be included in all copies or substantial portions |
+| ❌ **Commercial use** | Any commercial use, monetization, distribution for profit, or integration into a commercial product or service is **prohibited** under the free license |
+| 💼 **Commercial license** | Available for purchase from the copyright holder, including use *without* the attribution requirement |
+| ⚠️ **USBi / Vendor ID notice** | The project uses an Analog Devices USB Vendor ID for SigmaStudio compatibility, **strictly for personal, non-commercial use**. Commercial distribution is prohibited unless the Analog Devices VID is completely removed and omitted from any user-facing distribution |
+| 🚫 **Warranty** | Provided "as is", without warranty of any kind |
+
+**Commercial licensing inquiries:** StaplezStudio@gmail.com · StaplezStudios@gmail.com · StudioStaplez@gmail.com
+
+### How to Credit This Project
+
+If you use, redistribute or build on this work, include a notice such as:
+
+> Based on **USBi Emulator for the Blue Pill (DX-PJ26 edition)** by **Staplez Studio**: https://github.com/staplez-studio/USBi_BluePill
+
+Third-party components keep their own licenses, listed below.
+
+---
+
+## Credits and Sources
+
+This project stands on the work of others. Thank you to everyone below.
+
+### Created by
+
+- **[Staplez Studio](https://github.com/staplez-studio)**: firmware, documentation, protocol analysis and project banner artwork ([BluePill_Extra_Applications](https://github.com/staplez-studio/BluePill_Extra_Applications))
+
+### Third-Party Code and Assets
+
+| Component | Author / Owner | License | Where used |
+|-----------|----------------|---------|------------|
+| **STM32Cube HAL, CMSIS device headers, USB device library** | STMicroelectronics ([STM32CubeF1](https://github.com/STMicroelectronics/STM32CubeF1)) | BSD-3-Clause (HAL/USB library), per-file licenses in the package | `firmware/Drivers`, `firmware/Middlewares` (unmodified) |
+| **USB device glue code (`usbd_conf.c`)** | Derived from ST's STM32CubeF1 USB device examples, trimmed for a control-only device | BSD-3-Clause | `usbd_conf.c` / `.h` |
+| **Spleen 5×8 bitmap font** | Copyright © 2018-2026 Frederic Cambus ([fcambus/spleen](https://github.com/fcambus/spleen)) | BSD-2-Clause | `font5x8.h` (generated from the font). Text in `firmware/licenses/LICENSE_Spleen_font.txt` |
+
+Full license texts for these components are in `firmware/licenses/`.
+
+### Reference Material and Research
+
+| Source | Used for |
+|--------|----------|
+| **Analog Devices USBi firmware image** (`ADI_USBi.spt`, from the author's own SigmaStudio installation) | Recovering the USBi protocol, descriptors and request handlers by disassembling the 8051 code (see [`docs/PROTOCOL.md`](docs/PROTOCOL.md)) |
+| **Analog Devices host library** (`ADIUSBi.dll`, class `Analog.ADIUSBi`) | Cross-checking command names, the `TransferStatus` and `CommsFormat` enums, and the 64-byte pack size from the surviving metadata |
+| **Analog Devices SigmaStudio and USB driver package** (`CyUSB.inf` / `CyUSB.sys`) | Driver binding for `VID_0456 & PID_7031` |
+| **Cypress EZ-USB FX2** (the USBi's original USB controller) | Architecture of the device being emulated (8051 core, `0xA0` RAM-download requests) |
+| **DX-SMART DX-PJ26** schematic summary and PJ26 troubleshooting guide | Board details (CH340 USB-serial, header P3, user LED) and the MCUISP `Reset@DTR High(>+3V), ISP@RTS Low` auto-entry setting |
+| **DX-PJ26 V1.2 write-up** | The user LED on `PB11` |
+| **Community V1.1 board guide** | The alternative `Reset@DTR Low(<-3V), ISP@RTS Low` MCUISP setting |
+| **STMicroelectronics STM32F103 documentation** | Pin capabilities, the serial bootloader, and the `PC13`-`PC15` current and speed limits |
+
+> These materials were used for **interoperability and documentation only.** No Analog Devices or Cypress software, driver or firmware is included in this repository.
+
+### Tools
+
+- **[MCUISP](https://www.mcuisp.com/)**: UART flasher for the STM32 serial bootloader
+- **WCH CH340** USB-serial driver
+- **Arm GNU Toolchain** (`arm-none-eabi-gcc`), **GNU Make**, **STM32CubeIDE**, **STM32CubeProgrammer**, **OpenOCD / ST-Link** (optional fallback flashing)
+- **SigmaStudio**, the application this emulator is built to work with
+
+### Trademarks
+
+*Analog Devices*, *USBi*, *SigmaDSP*, *SigmaStudio*, *Cypress*, *EZ-USB*, *STM32*, *STMicroelectronics*, *WCH* and *CH340* are trademarks of their respective owners. This project is independent and is not affiliated with, endorsed by, or supported by any of them.
 
 ---
 

@@ -2,7 +2,6 @@
 
 [![Staplez Studio Banner](https://github.com/staplez-studio/BluePill_Extra_Applications/raw/main/github-banner-1024x512.png?raw=true)](https://github.com/staplez-studio/BluePill_Extra_Applications)
 
-https://github.com/staplez-studio/USBi_BluePill/blob/Dx-Smart-PJ26-v1.2-Edition/screen.png?raw=true
 ![USBi BluePill screen](https://github.com/staplez-studio/USBi_BluePill/blob/Dx-Smart-PJ26-v1.2-Edition/screen.png?raw=true)
 # USBi Emulator for the Blue Pill (STM32F103C8)
 ### Dx-Smart-PJ26 · v1.2 Edition

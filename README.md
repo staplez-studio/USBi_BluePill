@@ -1,4 +1,4 @@
- i dont have this hardware to test on FURTHERMORE have merged PROJECTS for the better good so i can work on things together so im no-longer touching anything, all updates to the code will be presented to you in multi-flasher as it keeps everything in a nice neat all in one
+ I dont have this hardware to test on FURTHERMORE have merged PROJECTS for the better good so i can work on things together so im no-longer touching anything on this code alone as all updates to the code will be presented to you in multi-flasher as it keeps everything in a nice neat all in one place.
 <br>
 
 <p align="center">

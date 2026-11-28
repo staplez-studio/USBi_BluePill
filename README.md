@@ -1,5 +1,4 @@
-
-If you use plan to use this just know I don't own the hardware to test the code this was written for.<br>This has branch with the jp26 https://github.com/staplez-studio/USBi_BluePill/tree/Dx-Smart-PJ26-v1.2-Edition if you plan to use the main and not the branch you are doing so with UNTESTED firmware.
+ i dont have this hardware to test on FURTHERMORE have merged PROJECTS for the better good so i can work on things together so im no-longer touching anything, all updates to the code will be presented to you in multi-flasher as it keeps everything in a nice neat all in one
 <br>
 
 <p align="center">
